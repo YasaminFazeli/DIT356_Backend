@@ -1,0 +1,32 @@
+image: node:14-alpine
+
+# Cache modules in between jobs per-branch
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - server/node_modules/
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  tags:
+    - docker
+  script:
+    - npm install
+    - npm build
+
+test:
+  stage: test
+  tags:
+    - docker
+  services:
+    - name: mvertes/alpine-mongo:latest
+      alias: mongo
+  variables:
+    MONGODB_URI: "mongodb+srv://CI:CI@clusterci.2bdo9bk.mongodb.net/?retryWrites=true&w=majority"
+  script:
+    - npm install
+    - npm run ci-test
